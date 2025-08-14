@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSFLink Saver - Organize Your Video Collection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .platform-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-indigo-700">
+                    <i class="fas fa-video mr-2"></i> NSFLink Saver
+                </h1>
+                <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+                    <i class="fas fa-moon text-gray-700 dark:text-yellow-300"></i>
+                </button>
+            </div>
+            <p class="text-gray-600 mt-2">Save any video link from any platform</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-4 sticky top-6">
+                    <!-- Platform Filter -->
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+                            <i class="fas fa-filter mr-2 text-indigo-500"></i> Platforms
+                        </h2>
+                        <div class="space-y-2">
+                            <button class="platform-filter-btn w-full text-left px-3 py-2 rounded-md hover:bg-indigo-50 flex items-center" data-platform="all">
+                                <i class="fas fa-globe mr-2 text-indigo-500"></i> All Platforms
+                            </button>
+                            <button class="platform-filter-btn w-full text-left px-3 py-2 rounded-md hover:bg-indigo-50 flex items-center" data-platform="youtube">
+                                <i class="fab fa-youtube mr-2 text-red-500"></i> YouTube
+                            </button>
+                            <button class="platform-filter-btn w-full text-left px-3 py-2 rounded-md hover:bg-indigo-50 flex items-center" data-platform="instagram">
+                                <i class="fab fa-instagram mr-2 text-pink-500"></i> Instagram
+                            </button>
+                            <button class="platform-filter-btn w-full text-left px-3 py-2 rounded-md hover:bg-indigo-50 flex items-center" data-platform="tiktok">
+                                <i class="fab fa-tiktok mr-2 text-black"></i> TikTok
+                            </button>
+                            <button class="platform-filter-btn w-full text-left px-3 py-2 rounded-md hover:bg-indigo-50 flex items-center" data-platform="vimeo">
+                                <i class="fab fa-vimeo-v mr-2 text-blue-400"></i> Vimeo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Categories -->
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+                            <i class="fas fa-tags mr-2 text-indigo-500"></i> Categories
+                        </h2>
+                        <div class="space-y-2">
+                            <button class="category-filter-btn w-full text-left px-3 py-2 rounded-md hover:bg-indigo-50" data-category="all">
+                                All Categories
+                            </button>
+                            <button class="category-filter-btn w-full text-left px-3 py-2 rounded-md hover:bg-indigo-50" data-category="education">
+                                Education
+                            </button>
+                            <button class="category-filter-btn w-full text-left px-3 py-2 rounded-md hover:bg-indigo-50" data-category="entertainment">
+                                Entertainment
+                            </button>
+                            <button class="category-filter-btn w-full text-left px-3 py-2 rounded-md hover:bg-indigo-50" data-category="music">
+                                Music
+                            </button>
+                            <button class="category-filter-btn w-full text-left px-3 py-2 rounded-md hover:bg-indigo-50" data-category="sports">
+                                Sports
+                            </button>
+                            <button class="category-filter-btn w-full text-left px-3 py-2 rounded-md hover:bg-indigo-50" data-category="technology">
+                                Technology
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Add New Category -->
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+                            <i class="fas fa-plus-circle mr-2 text-indigo-500"></i> Add Category
+                        </h2>
+                        <div class="flex">
+                            <input type="text" id="new-category" placeholder="Category name" class="flex-grow px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button id="add-category-btn" class="bg-indigo-500 text-white px-3 py-2 rounded-r-md hover:bg-indigo-600">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div>
+                        <h2 class="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+                            <i class="fas fa-chart-bar mr-2 text-indigo-500"></i> Stats
+                        </h2>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Total Links:</span>
+                                <span id="total-links" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">YouTube:</span>
+                                <span id="youtube-count" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Instagram:</span>
+                                <span id="instagram-count" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">TikTok:</span>
+                                <span id="tiktok-count" class="font-medium">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="lg:col-span-3">
+                <!-- Add New Video Form -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">
+                        <i class="fas fa-plus-circle mr-2 text-indigo-500"></i> Add New Video Link
+                    </h2>
+                    <form id="add-video-form" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="video-url" class="block text-sm font-medium text-gray-700 mb-1">Video URL</label>
+                                <input type="url" id="video-url" required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="https://www.youtube.com/watch?v=...">
+                            </div>
+                            <div>
+                                <label for="video-title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                                <input type="text" id="video-title" required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Video title">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="video-platform" class="block text-sm font-medium text-gray-700 mb-1">Platform</label>
+                                <select id="video-platform" required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="">Select platform</option>
+                                    <option value="youtube">YouTube</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="tiktok">TikTok</option>
+                                    <option value="vimeo">Vimeo</option>
+                                    <option value="other">Other/Google Drive</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="video-category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                <select id="video-category" required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="">Select category</option>
+                                    <option value="education">Education</option>
+                                    <option value="entertainment">Entertainment</option>
+                                    <option value="music">Music</option>
+                                    <option value="sports">Sports</option>
+                                    <option value="technology">Technology</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="video-notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                            <textarea id="video-notes" rows="2" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Any notes about this video..."></textarea>
+                        </div>
+                        
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 flex items-center">
+                                <i class="fas fa-save mr-2"></i> Save Video
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Video Links List -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">
+                            <i class="fas fa-list-ul mr-2 text-indigo-500"></i> Your Video Collection
+                        </h2>
+                        <div class="flex items-center">
+                            <input type="text" id="search-videos" placeholder="Search videos..." class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button id="clear-search" class="ml-2 text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="video-list-container" class="custom-scrollbar" style="max-height: 600px; overflow-y: auto;">
+                        <div id="video-list" class="space-y-4">
+                            <!-- Video cards will be added here dynamically -->
+                            <div id="no-videos" class="text-center py-10 text-gray-500">
+                                <i class="fas fa-video-slash text-4xl mb-3"></i>
+                                <p class="text-lg">No videos added yet. Start by adding your first video!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Modal -->
+    <div id="video-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+            <div class="flex justify-between items-center bg-indigo-500 text-white p-4">
+                <h3 id="modal-title" class="text-lg font-semibold"></h3>
+                <button id="close-modal" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <div id="video-player-container" class="aspect-w-16 aspect-h-9 mb-4">
+                    <!-- Video embed will be placed here -->
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-1">Platform:</h4>
+                        <p id="modal-platform" class="text-gray-600"></p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-1">Category:</h4>
+                        <p id="modal-category" class="text-gray-600"></p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h4 class="font-medium text-gray-800 mb-1">Notes:</h4>
+                    <p id="modal-notes" class="text-gray-600"></p>
+                </div>
+                <div class="mt-6 flex justify-between">
+                    <button id="edit-video-btn" class="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 flex items-center">
+                        <i class="fas fa-edit mr-2"></i> Edit
+                    </button>
+                    <button id="delete-video-btn" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 flex items-center">
+                        <i class="fas fa-trash mr-2"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Video Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center bg-indigo-500 text-white p-4">
+                <h3 class="text-lg font-semibold">Edit Video</h3>
+                <button id="close-edit-modal" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="edit-video-form">
+                    <input type="hidden" id="edit-video-id">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="edit-video-title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                            <input type="text" id="edit-video-title" required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label for="edit-video-url" class="block text-sm font-medium text-gray-700 mb-1">URL</label>
+                            <input type="url" id="edit-video-url" required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="edit-video-platform" class="block text-sm font-medium text-gray-700 mb-1">Platform</label>
+                            <select id="edit-video-platform" required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="youtube">YouTube</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="tiktok">TikTok</option>
+                                <option value="vimeo">Vimeo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="edit-video-category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <select id="edit-video-category" required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="education">Education</option>
+                                <option value="entertainment">Entertainment</option>
+                                <option value="music">Music</option>
+                                <option value="sports">Sports</option>
+                                <option value="technology">Technology</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="edit-video-notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <textarea id="edit-video-notes" rows="3" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" id="cancel-edit-btn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400">
+                            Cancel
+                        </button>
+                        <button type="submit" class="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize local storage if not exists
+        if (!localStorage.getItem('videoLinks')) {
+            localStorage.setItem('videoLinks', JSON.stringify([]));
+        }
+
+        // DOM Elements
+        const addVideoForm = document.getElementById('add-video-form');
+        const videoList = document.getElementById('video-list');
+        const noVideosElement = document.getElementById('no-videos');
+        const videoModal = document.getElementById('video-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const editModal = document.getElementById('edit-modal');
+        const closeEditModalBtn = document.getElementById('close-edit-modal');
+        const editVideoForm = document.getElementById('edit-video-form');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const searchInput = document.getElementById('search-videos');
+        const clearSearchBtn = document.getElementById('clear-search');
+        const platformFilterBtns = document.querySelectorAll('.platform-filter-btn');
+        const categoryFilterBtns = document.querySelectorAll('.category-filter-btn');
+        const addCategoryBtn = document.getElementById('add-category-btn');
+        const newCategoryInput = document.getElementById('new-category');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+
+        // State variables
+        let currentFilter = {
+            platform: 'all',
+            category: 'all',
+            search: ''
+        };
+
+        // Event Listeners
+        addVideoForm.addEventListener('submit', handleAddVideo);
+        closeModalBtn.addEventListener('click', () => videoModal.classList.add('hidden'));
+        closeEditModalBtn.addEventListener('click', () => editModal.classList.add('hidden'));
+        cancelEditBtn.addEventListener('click', () => editModal.classList.add('hidden'));
+        searchInput.addEventListener('input', handleSearch);
+        clearSearchBtn.addEventListener('click', clearSearch);
+        addCategoryBtn.addEventListener('click', addNewCategory);
+        themeToggleBtn.addEventListener('click', toggleTheme);
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            loadVideos();
+            updateStats();
+            
+            // Check for saved theme preference
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.documentElement.classList.add('dark');
+                themeToggleBtn.innerHTML = '<i class="fas fa-sun text-yellow-300"></i>';
+            }
+        });
+
+        // Functions
+        function handleAddVideo(e) {
+            e.preventDefault();
+            
+            const url = document.getElementById('video-url').value;
+            const title = document.getElementById('video-title').value;
+            const platform = document.getElementById('video-platform').value;
+            const category = document.getElementById('video-category').value;
+            const notes = document.getElementById('video-notes').value;
+            
+            // Validate URL
+            if (!isValidUrl(url)) {
+                alert('Please enter a valid URL');
+                return;
+            }
+            
+            // Create new video object
+            const newVideo = {
+                id: Date.now().toString(),
+                url,
+                title,
+                platform,
+                category,
+                notes,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Save to local storage
+            const videos = JSON.parse(localStorage.getItem('videoLinks'));
+            videos.push(newVideo);
+            localStorage.setItem('videoLinks', JSON.stringify(videos));
+            
+            // Reset form
+            addVideoForm.reset();
+            
+            // Reload videos
+            loadVideos();
+            updateStats();
+            
+            // Show success message
+            showToast('Video added successfully!', 'success');
+        }
+
+        function loadVideos(filter = currentFilter) {
+            const videos = JSON.parse(localStorage.getItem('videoLinks'));
+            
+            // Filter videos
+            let filteredVideos = videos.filter(video => {
+                const matchesPlatform = filter.platform === 'all' || video.platform === filter.platform;
+                const matchesCategory = filter.category === 'all' || video.category === filter.category;
+                const matchesSearch = video.title.toLowerCase().includes(filter.search.toLowerCase()) || 
+                                     video.notes.toLowerCase().includes(filter.search.toLowerCase());
+                
+                return matchesPlatform && matchesCategory && matchesSearch;
+            });
+            
+            // Clear current list
+            videoList.innerHTML = '';
+            
+            if (filteredVideos.length === 0) {
+                noVideosElement.classList.remove('hidden');
+                return;
+            }
+            
+            noVideosElement.classList.add('hidden');
+            
+            // Sort by date (newest first)
+            filteredVideos.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            // Add videos to the list
+            filteredVideos.forEach((video, index) => {
+                const videoCard = createVideoCard(video, index);
+                videoList.appendChild(videoCard);
+            });
+        }
+
+        function createVideoCard(video, index) {
+            const card = document.createElement('div');
+            card.className = 'bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow fade-in';
+            card.dataset.id = video.id;
+            card.dataset.platform = video.platform;
+            card.dataset.category = video.category;
+            
+            // Platform icon and title
+            let platformIcon;
+            switch(video.platform) {
+                case 'youtube':
+                    platformIcon = '<i class="fab fa-youtube text-red-500 mr-2"></i>';
+                    break;
+                case 'instagram':
+                    platformIcon = '<i class="fab fa-instagram text-pink-500 mr-2"></i>';
+                    break;
+                case 'tiktok':
+                    platformIcon = '<i class="fab fa-tiktok text-black mr-2"></i>';
+                    break;
+                case 'vimeo':
+                    platformIcon = '<i class="fab fa-vimeo-v text-blue-400 mr-2"></i>';
+                    break;
+                default:
+                    platformIcon = '<i class="fas fa-video text-indigo-500 mr-2"></i>';
+            }
+            
+            // Category badge
+            const categoryColors = {
+                education: 'bg-blue-100 text-blue-800',
+                entertainment: 'bg-purple-100 text-purple-800',
+                music: 'bg-green-100 text-green-800',
+                sports: 'bg-orange-100 text-orange-800',
+                technology: 'bg-indigo-100 text-indigo-800'
+            };
+            
+            const categoryClass = categoryColors[video.category] || 'bg-gray-100 text-gray-800';
+            
+            // Truncate notes if too long
+            const truncatedNotes = video.notes.length > 100 ? video.notes.substring(0, 100) + '...' : video.notes;
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800 mb-1">${platformIcon}${video.title}</h3>
+                        <div class="flex items-center text-sm text-gray-500 mb-2">
+                            <span class="mr-3">${formatDate(video.createdAt)}</span>
+                            <span class="${categoryClass} text-xs px-2 py-1 rounded-full">${capitalizeFirstLetter(video.category)}</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="view-btn p-2 text-indigo-500 hover:text-indigo-700" title="View">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="copy-btn p-2 text-gray-500 hover:text-gray-700" title="Copy URL">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="delete-btn p-2 text-red-500 hover:text-red-700" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                ${video.notes ? `<p class="text-gray-600 text-sm mt-2">${truncatedNotes}</p>` : ''}
+            `;
+            
+            // Add event listeners to buttons
+            const viewBtn = card.querySelector('.view-btn');
+            const copyBtn = card.querySelector('.copy-btn');
+            
+            viewBtn.addEventListener('click', () => openVideoModal(video));
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(video.url);
+                showToast('URL copied to clipboard!', 'success');
+            });
+
+            const deleteBtn = card.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm('Are you sure you want to delete this video?')) {
+                    const videos = JSON.parse(localStorage.getItem('videoLinks'));
+                    const updatedVideos = videos.filter(v => v.id !== video.id);
+                    localStorage.setItem('videoLinks', JSON.stringify(updatedVideos));
+                    card.remove();
+                    updateStats();
+                    showToast('Video deleted successfully!', 'success');
+                    
+                    // Show "no videos" message if list is empty
+                    if (updatedVideos.length === 0) {
+                        noVideosElement.classList.remove('hidden');
+                    }
+                }
+            });
+            
+            return card;
+        }
+
+        function openVideoModal(video) {
+            const modalTitle = document.getElementById('modal-title');
+            const modalPlatform = document.getElementById('modal-platform');
+            const modalCategory = document.getElementById('modal-category');
+            const modalNotes = document.getElementById('modal-notes');
+            const videoPlayerContainer = document.getElementById('video-player-container');
+            
+            // Set modal content
+            modalTitle.textContent = video.title;
+            modalPlatform.textContent = capitalizeFirstLetter(video.platform);
+            modalCategory.textContent = capitalizeFirstLetter(video.category);
+            modalNotes.textContent = video.notes || 'No notes available';
+            
+            // Set video player based on platform
+            videoPlayerContainer.innerHTML = '';
+            
+            if (video.platform === 'youtube') {
+                const videoId = extractYouTubeId(video.url);
+                if (videoId) {
+                    videoPlayerContainer.innerHTML = `
+                        <iframe class="w-full h-64 md:h-96" src="https://www.youtube.com/embed/${videoId}" 
+                        frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen></iframe>
+                    `;
+                } else {
+                    videoPlayerContainer.innerHTML = '<p class="text-gray-500">Could not load YouTube video</p>';
+                }
+            } else if (video.platform === 'instagram') {
+                videoPlayerContainer.innerHTML = `
+                    <div class="bg-gray-100 p-4 rounded-md">
+                        <p class="text-gray-500">Instagram videos can't be embedded directly. <a href="${video.url}" target="_blank" class="text-indigo-500 hover:underline">Open in Instagram</a></p>
+                    </div>
+                `;
+            } else if (video.platform === 'tiktok') {
+                videoPlayerContainer.innerHTML = `
+                    <div class="bg-gray-100 p-4 rounded-md">
+                        <p class="text-gray-500">TikTok videos can't be embedded directly. <a href="${video.url}" target="_blank" class="text-indigo-500 hover:underline">Open in TikTok</a></p>
+                    </div>
+                `;
+            } else if (video.platform === 'vimeo') {
+                const videoId = extractVimeoId(video.url);
+                if (videoId) {
+                    videoPlayerContainer.innerHTML = `
+                        <iframe class="w-full h-64 md:h-96" src="https://player.vimeo.com/video/${videoId}" 
+                        frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                    `;
+                } else {
+                    videoPlayerContainer.innerHTML = '<p class="text-gray-500">Could not load Vimeo video</p>';
+                }
+            } else if (video.platform === 'other') {
+                videoPlayerContainer.innerHTML = `
+                    <div class="bg-gray-100 p-4 rounded-md">
+                        <p class="text-gray-500">This link cannot be embedded. <a href="${video.url}" target="_blank" class="text-indigo-500 hover:underline">Open in new tab</a></p>
+                    </div>
+                `;
+            } else {
+                videoPlayerContainer.innerHTML = `
+                    <div class="bg-gray-100 p-4 rounded-md">
+                        <p class="text-gray-500">This video platform is not supported for embedding. <a href="${video.url}" target="_blank" class="text-indigo-500 hover:underline">Open in new tab</a></p>
+                    </div>
+                `;
+            }
+            
+            // Set edit and delete buttons
+            const editBtn = document.getElementById('edit-video-btn');
+            const deleteBtn = document.getElementById('delete-video-btn');
+            
+            editBtn.onclick = () => openEditModal(video);
+            deleteBtn.onclick = () => deleteVideo(video.id);
+            
+            // Show modal
+            videoModal.classList.remove('hidden');
+        }
+
+        function openEditModal(video) {
+            // Close the view modal
+            videoModal.classList.add('hidden');
+            
+            // Fill the edit form
+            document.getElementById('edit-video-id').value = video.id;
+            document.getElementById('edit-video-title').value = video.title;
+            document.getElementById('edit-video-url').value = video.url;
+            document.getElementById('edit-video-platform').value = video.platform;
+            document.getElementById('edit-video-category').value = video.category;
+            document.getElementById('edit-video-notes').value = video.notes;
+            
+            // Show the edit modal
+            editModal.classList.remove('hidden');
+        }
+
+        function handleEditVideo(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('edit-video-id').value;
+            const title = document.getElementById('edit-video-title').value;
+            const url = document.getElementById('edit-video-url').value;
+            const platform = document.getElementById('edit-video-platform').value;
+            const category = document.getElementById('edit-video-category').value;
+            const notes = document.getElementById('edit-video-notes').value;
+            
+            // Validate URL
+            if (!isValidUrl(url)) {
+                alert('Please enter a valid URL');
+                return;
+            }
+            
+            // Update video in local storage
+            const videos = JSON.parse(localStorage.getItem('videoLinks'));
+            const videoIndex = videos.findIndex(v => v.id === id);
+            
+            if (videoIndex !== -1) {
+                videos[videoIndex] = {
+                    ...videos[videoIndex],
+                    title,
+                    url,
+                    platform,
+                    category,
+                    notes
+                };
+                
+                localStorage.setItem('videoLinks', JSON.stringify(videos));
+                
+                // Close modal
+                editModal.classList.add('hidden');
+                
+                // Reload videos
+                loadVideos();
+                updateStats();
+                
+                // Show success message
+                showToast('Video updated successfully!', 'success');
+            }
+        }
+
+        function deleteVideo(id) {
+            if (confirm('Are you sure you want to delete this video?')) {
+                const videos = JSON.parse(localStorage.getItem('videoLinks'));
+                const updatedVideos = videos.filter(video => video.id !== id);
+                
+                localStorage.setItem('videoLinks', JSON.stringify(updatedVideos));
+                
+                // Close modal
+                videoModal.classList.add('hidden');
+                
+                // Reload videos
+                loadVideos();
+                updateStats();
+                
+                // Show success message
+                showToast('Video deleted successfully!', 'success');
+            }
+        }
+
+        function handleSearch(e) {
+            currentFilter.search = e.target.value;
+            loadVideos();
+        }
+
+        function clearSearch() {
+            searchInput.value = '';
+            currentFilter.search = '';
+            loadVideos();
+        }
+
+        function updateStats() {
+            const videos = JSON.parse(localStorage.getItem('videoLinks'));
+            
+            document.getElementById('total-links').textContent = videos.length;
+            document.getElementById('youtube-count').textContent = videos.filter(v => v.platform === 'youtube').length;
+            document.getElementById('instagram-count').textContent = videos.filter(v => v.platform === 'instagram').length;
+            document.getElementById('tiktok-count').textContent = videos.filter(v => v.platform === 'tiktok').length;
+        }
+
+        function addNewCategory() {
+            const categoryName = newCategoryInput.value.trim();
+            
+            if (!categoryName) {
+                showToast('Please enter a category name', 'error');
+                return;
+            }
+            
+            // In a real app, you would save this to your categories list
+            // For now, we'll just show a success message
+            showToast(`Category "${categoryName}" added!`, 'success');
+            newCategoryInput.value = '';
+            
+            // You would then need to update your category dropdowns
+            // This is a simplified version - in a real app you'd manage categories in state/localStorage
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            
+            if (html.classList.contains('dark')) {
+                localStorage.setItem('darkMode', 'true');
+                themeToggleBtn.innerHTML = '<i class="fas fa-sun text-yellow-300"></i>';
+            } else {
+                localStorage.setItem('darkMode', 'false');
+                themeToggleBtn.innerHTML = '<i class="fas fa-moon text-gray-700"></i>';
+            }
+        }
+
+        // Helper functions
+        function isValidUrl(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function extractYouTubeId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function extractVimeoId(url) {
+            const regExp = /^.*(vimeo\.com\/)((channels\/[A-z]+\/)|(groups\/[A-z]+\/videos\/))?([0-9]+)/;
+            const match = url.match(regExp);
+            return match ? match[5] : null;
+        }
+
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-md shadow-lg text-white ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } animate-fade-in-out`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Add event listeners for platform and category filters
+        platformFilterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentFilter.platform = btn.dataset.platform;
+                loadVideos();
+                
+                // Update active state
+                platformFilterBtns.forEach(b => b.classList.remove('bg-indigo-100', 'text-indigo-800'));
+                btn.classList.add('bg-indigo-100', 'text-indigo-800');
+            });
+        });
+
+        categoryFilterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentFilter.category = btn.dataset.category;
+                loadVideos();
+                
+                // Update active state
+                categoryFilterBtns.forEach(b => b.classList.remove('bg-indigo-100', 'text-indigo-800'));
+                btn.classList.add('bg-indigo-100', 'text-indigo-800');
+            });
+        });
+
+        // Edit form submission
+        editVideoForm.addEventListener('submit', handleEditVideo);
+    </script>
+</body>
+</html>
